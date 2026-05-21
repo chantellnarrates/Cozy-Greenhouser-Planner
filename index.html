@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Greenhouse Planner</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#587b4d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Greenhouse Planner" />
   <style>
     body {
       margin: 0;
@@ -718,6 +723,19 @@
       } else {
         localStorage.setItem('cozyMode', 'off');
       }
+    }
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(function() {
+            console.log('Service worker registered');
+          })
+          .catch(function(error) {
+            console.log('Service worker registration failed:', error);
+          });
+      });
     }
   </script>
 </body>

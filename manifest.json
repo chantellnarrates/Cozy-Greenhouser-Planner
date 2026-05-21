@@ -1,0 +1,10 @@
+{
+  "name": "Greenhouse Planner",
+  "short_name": "Greenhouse",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f1e8",
+  "theme_color": "#587b4d",
+  "description": "A cozy greenhouse planning app for plant tracking, watering alerts, ecosystems, and notes.",
+  "icons": []
+}
