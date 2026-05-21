@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Greenhouse Planner</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f1e8;
+      color: #2f3a2f;
+      display: flex;
+      justify-content: center;
+      padding: 30px 16px;
+      transition: 0.3s ease;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      background: #fffaf0;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      transition: 0.3s ease;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+      text-align: center;
+    }
+
+    p {
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin-top: 16px;
+      font-weight: bold;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 12px;
+      border: 1px solid #c8c0ad;
+      font-size: 16px;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 22px;
+      border: none;
+      background: #587b4d;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #45633d;
+    }
+
+    .secondary-button {
+      background: #8b7b5e;
+      margin-top: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .note-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    }
+
+    .plant-tomato {
+      border-left: 6px solid #d9534f;
+    }
+
+    .plant-basil, .plant-oregano, .plant-mint {
+      border-left: 6px solid #5cb85c;
+    }
+
+    .plant-onion {
+      border-left: 6px solid #d8b365;
+    }
+
+    .plant-lettuce, .plant-rocket {
+      border-left: 6px solid #7bc96f;
+    }
+
+    .plant-custom {
+      border-left: 6px solid #8e7cc3;
+    }
+
+    .secondary-button:hover {
+      background: #71634b;
+    }
+
+    .result, .notes-list {
+      margin-top: 24px;
+      padding: 18px;
+      border-radius: 16px;
+      background: #edf3e8;
+      display: none;
+      line-height: 1.6;
+    }
+
+    .note-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: #fffaf0;
+      border: 1px solid #d9d0bd;
+      border-radius: 14px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .result strong, .notes-list strong {
+      color: #354f2f;
+    }
+
+    .footer {
+      margin-top: 20px;
+      font-size: 13px;
+      opacity: 0.7;
+    }
+
+    body.cozy-dark {
+      background: #1f261f;
+      color: #e8e2d6;
+    }
+
+    body.cozy-dark .container {
+      background: #2d372d;
+      color: #f5f1e8;
+    }
+
+    body.cozy-dark .result,
+    body.cozy-dark .notes-list {
+      background: #3b473b;
+      color: #f5f1e8;
+    }
+
+    body.cozy-dark .note-card {
+      background: #2d372d;
+      color: #f5f1e8;
+      border-color: #5d6b5d;
+    }
+
+    body.cozy-dark .result strong,
+    body.cozy-dark .notes-list strong {
+      color: #dfe9d7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌿 Greenhouse Planner</h1>
+
+    <div id="dashboardStats" class="result" style="display:block; margin-bottom:20px;"></div>
+
+    <div style="text-align:center; margin-bottom:18px; font-size:14px; opacity:0.75;">
+      Cozy greenhouse management for chaotic plant people 🌿
+    </div>
+    <p>Plan your planting, watering, harvest dates, and little greenhouse notes without overthinking it.</p>
+
+    <label for="plantPreset">Choose a plant preset</label>
+    <select id="plantPreset" onchange="usePreset()">
+      <option value="">Choose a plant...</option>
+      <option value="tomato">Tomato</option>
+      <option value="basil">Basil</option>
+      <option value="oregano">Oregano</option>
+      <option value="mint">Mint</option>
+      <option value="onion">Onion</option>
+      <option value="lettuce">Lettuce</option>
+      <option value="rocket">Rocket</option>
+      <option value="custom">Custom plant</option>
+    </select>
+
+    <label for="plantName">Plant name</label>
+    <input id="plantName" type="text" placeholder="e.g. Tomato, basil, oregano" />
+
+    <label for="plantDate">Date planted</label>
+    <input id="plantDate" type="date" />
+
+    <label for="waterDays">Water every how many days?</label>
+    <input id="waterDays" type="number" min="1" placeholder="e.g. 2" />
+
+    <label for="ecosystem">Choose ecosystem</label>
+    <select id="ecosystem"></select>
+
+    <label for="newEcosystem">Create custom ecosystem</label>
+    <input id="newEcosystem" type="text" placeholder="e.g. Mushroom Corner, Chaos Shelf, Tomato Cathedral" />
+    <button class="secondary-button" onclick="addEcosystem()">✨ Add Ecosystem</button>
+
+    <label for="startingStage">Starting growth stage</label>
+    <select id="startingStage">
+      <option value="🌰 Seeds">🌰 Seeds</option>
+      <option value="🌱 Seedling">🌱 Seedling</option>
+      <option value="🌿 Growing">🌿 Growing</option>
+      <option value="🌸 Flowering">🌸 Flowering</option>
+      <option value="🍅 Harvest Ready">🍅 Harvest Ready</option>
+    </select>
+
+    <label for="harvestDays">Estimated days to harvest</label>
+    <input id="harvestDays" type="number" min="1" placeholder="e.g. 60" />
+
+    <label for="greenhouseNote">Greenhouse note</label>
+    <textarea id="greenhouseNote" placeholder="e.g. Caterpillar spotted. Mint cutting planted. Soil still moist."></textarea>
+
+    <button onclick="makePlan()">Make My Plan</button>
+    <button class="secondary-button" onclick="saveNote()">Save Greenhouse Note</button>
+    <button class="secondary-button" onclick="toggleCozyMode()">🌙 Toggle Cozy Mode</button>
+
+    <div id="result" class="result"></div>
+    <label for="plantSearch">🔍 Search plants</label>
+    <input id="plantSearch" type="text" placeholder="Search plants or ecosystems..." oninput="showSavedPlants()" />
+
+    <label for="ecosystemFilter">🌍 Filter by ecosystem</label>
+    <select id="ecosystemFilter" onchange="showSavedPlants()">
+      <option value="all">All Ecosystems</option>
+    </select>
+
+    <label for="stageFilter">✨ Filter by stage</label>
+    <select id="stageFilter" onchange="showSavedPlants()">
+      <option value="all">All Stages</option>
+      <option value="🌰 Seeds">🌰 Seeds</option>
+      <option value="🌱 Seedling">🌱 Seedling</option>
+      <option value="🌿 Growing">🌿 Growing</option>
+      <option value="🌸 Flowering">🌸 Flowering</option>
+      <option value="🍅 Harvest Ready">🍅 Harvest Ready</option>
+    </select>
+
+    <div id="wateringAlerts" class="notes-list"></div>
+    <div id="savedPlantsList" class="notes-list"></div>
+    <div id="notesList" class="notes-list"></div>
+
+    <p class="footer">Tiny greenhouse tool v12 — polished greenhouse dashboard.</p>
+  </div>
+
+  <script>
+    const plantIcons = {
+      tomato: '🍅',
+      basil: '🌿',
+      oregano: '🌱',
+      mint: '🍃',
+      onion: '🧅',
+      lettuce: '🥬',
+      rocket: '🌾',
+      custom: '🪴'
+    };
+
+    const presets = {
+      tomato: {
+        name: 'Tomato',
+        water: 2,
+        harvest: 75,
+        note: 'Keep soil evenly moist and check for caterpillars often.',
+        tasks: ['Check soil moisture', 'Look under leaves for caterpillars', 'Check support/string/ties', 'Remove yellowing leaves']
+      },
+      basil: {
+        name: 'Basil',
+        water: 2,
+        harvest: 45,
+        note: 'Pinch the tops regularly to encourage bushier growth.',
+        tasks: ['Check soil moisture', 'Pinch the top growth if ready', 'Remove damaged leaves', 'Check for pests']
+      },
+      oregano: {
+        name: 'Oregano',
+        water: 4,
+        harvest: 80,
+        note: 'Let the soil dry slightly between watering.',
+        tasks: ['Check if soil has dried slightly', 'Look for new growth', 'Avoid overwatering', 'Trim lightly if bushy']
+      },
+      mint: {
+        name: 'Mint',
+        water: 2,
+        harvest: 50,
+        note: 'Mint spreads easily, so pots are usually safest.',
+        tasks: ['Check soil moisture', 'Check for roots spreading', 'Pinch tips for bushier growth', 'Harvest a few leaves if ready']
+      },
+      onion: {
+        name: 'Onion',
+        water: 3,
+        harvest: 100,
+        note: 'Keep the bed weed-free while bulbs develop.',
+        tasks: ['Check soil moisture', 'Remove tiny weeds', 'Check bulb area gently', 'Avoid disturbing roots']
+      },
+      lettuce: {
+        name: 'Lettuce',
+        water: 2,
+        harvest: 45,
+        note: 'Harvest outer leaves first for a longer picking season.',
+        tasks: ['Check soil moisture', 'Harvest outer leaves if ready', 'Watch for heat stress', 'Look for slugs or caterpillars']
+      },
+      rocket: {
+        name: 'Rocket',
+        water: 2,
+        harvest: 35,
+        note: 'Pick young leaves before they get too peppery.',
+        tasks: ['Check soil moisture', 'Pick young leaves if ready', 'Watch for bolting', 'Check for tiny holes in leaves']
+      }
+    };
+
+    let greenhouseNotes = JSON.parse(localStorage.getItem('greenhouseNotes')) || [];
+    let savedPlants = JSON.parse(localStorage.getItem('savedPlants')) || [];
+    let ecosystems = JSON.parse(localStorage.getItem('ecosystems')) || [
+      '🍅 Tomato Jungle',
+      '🌿 Herb Spiral',
+      '🌱 Seedling Nursery',
+      '🪴 Stoep Sanctuary',
+      '🐝 Pollinator Pocket',
+      '🤣 Chaos Shelf',
+      '🕷️ Spider Defense Division'
+    ];
+
+    window.onload = function() {
+      loadEcosystems();
+      loadEcosystemFilter();
+      updateDashboardStats();
+      updateDashboardStats();
+      showWateringAlerts();
+      showSavedPlants();
+      showNotes();
+
+      const savedCozyMode = localStorage.getItem('cozyMode');
+      if (savedCozyMode === 'on') {
+        document.body.classList.add('cozy-dark');
+      }
+    };
+
+    function loadEcosystemFilter() {
+      const ecosystemFilter = document.getElementById('ecosystemFilter');
+      ecosystemFilter.innerHTML = '<option value="all">All Ecosystems</option>';
+
+      ecosystems.forEach(ecosystem => {
+        const option = document.createElement('option');
+        option.value = ecosystem;
+        option.textContent = ecosystem;
+        ecosystemFilter.appendChild(option);
+      });
+    }
+
+    function loadEcosystems() {
+      const ecosystemSelect = document.getElementById('ecosystem');
+      ecosystemSelect.innerHTML = '';
+
+      ecosystems.forEach(ecosystem => {
+        const option = document.createElement('option');
+        option.value = ecosystem;
+        option.textContent = ecosystem;
+        ecosystemSelect.appendChild(option);
+      });
+    }
+
+    function addEcosystem() {
+      const newEcosystemInput = document.getElementById('newEcosystem');
+      const newEcosystem = newEcosystemInput.value.trim();
+
+      if (!newEcosystem) {
+        alert('Give your ecosystem a name first 🌿');
+        return;
+      }
+
+      const ecosystemName = newEcosystem.includes(' ') ? `✨ ${newEcosystem}` : `✨ ${newEcosystem}`;
+      ecosystems.push(ecosystemName);
+      localStorage.setItem('ecosystems', JSON.stringify(ecosystems));
+      newEcosystemInput.value = '';
+      loadEcosystems();
+      loadEcosystemFilter();
+      document.getElementById('ecosystem').value = ecosystemName;
+    }
+
+    function usePreset() {
+      const selectedPlant = document.getElementById('plantPreset').value;
+
+      if (!selectedPlant || selectedPlant === 'custom') {
+        document.getElementById('plantName').value = '';
+        document.getElementById('waterDays').value = '';
+        document.getElementById('harvestDays').value = '';
+        return;
+      }
+
+      const plant = presets[selectedPlant];
+      document.getElementById('plantName').value = plant.name;
+      document.getElementById('waterDays').value = plant.water;
+      document.getElementById('harvestDays').value = plant.harvest;
+    }
+
+    function formatDate(date) {
+      return date.toLocaleDateString('en-ZA', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+
+    function addDays(date, days) {
+      const result = new Date(date);
+      result.setDate(result.getDate() + Number(days));
+      return result;
+    }
+
+    function makeTaskList(selectedPlant) {
+      const defaultTasks = ['Check soil moisture', 'Look for pests', 'Remove dead leaves', 'Write one quick greenhouse note'];
+      const tasks = presets[selectedPlant]?.tasks || defaultTasks;
+
+      return tasks.map(task => `
+        <label style="font-weight: normal; margin-top: 8px;">
+          <input type="checkbox" style="width: auto; margin-right: 8px;" /> ${task}
+        </label>
+      `).join('');
+    }
+
+    function getPlantClass(plantName) {
+      const lowerName = plantName.toLowerCase();
+
+      if (lowerName.includes('tomato')) return 'plant-tomato';
+      if (lowerName.includes('basil')) return 'plant-basil';
+      if (lowerName.includes('oregano')) return 'plant-oregano';
+      if (lowerName.includes('mint')) return 'plant-mint';
+      if (lowerName.includes('onion')) return 'plant-onion';
+      if (lowerName.includes('lettuce')) return 'plant-lettuce';
+      if (lowerName.includes('rocket')) return 'plant-rocket';
+
+      return 'plant-custom';
+    }
+
+    function getPlantIcon(plantName) {
+      const lowerName = plantName.toLowerCase();
+
+      if (lowerName.includes('tomato')) return plantIcons.tomato;
+      if (lowerName.includes('basil')) return plantIcons.basil;
+      if (lowerName.includes('oregano')) return plantIcons.oregano;
+      if (lowerName.includes('mint')) return plantIcons.mint;
+      if (lowerName.includes('onion')) return plantIcons.onion;
+      if (lowerName.includes('lettuce')) return plantIcons.lettuce;
+      if (lowerName.includes('rocket')) return plantIcons.rocket;
+
+      return plantIcons.custom;
+    }
+
+    function cycleStage(index) {
+      const stages = ['🌰 Seeds', '🌱 Seedling', '🌿 Growing', '🌸 Flowering', '🍅 Harvest Ready'];
+
+      let currentIndex = stages.indexOf(savedPlants[index].stage);
+      currentIndex = (currentIndex + 1) % stages.length;
+
+      savedPlants[index].stage = stages[currentIndex];
+
+      localStorage.setItem('savedPlants', JSON.stringify(savedPlants));
+      updateDashboardStats();
+      showWateringAlerts();
+      showSavedPlants();
+    }
+
+    function editPlant(index) {
+      const updatedName = prompt('Update plant name:', savedPlants[index].plant);
+
+      if (!updatedName) return;
+
+      savedPlants[index].plant = updatedName;
+      savedPlants[index].icon = getPlantIcon(updatedName);
+
+      localStorage.setItem('savedPlants', JSON.stringify(savedPlants));
+      showWateringAlerts();
+      showSavedPlants();
+    }
+
+    function deletePlant(index) {
+      savedPlants.splice(index, 1);
+      localStorage.setItem('savedPlants', JSON.stringify(savedPlants));
+      showWateringAlerts();
+      showSavedPlants();
+    }
+
+    function savePlantPlan(plantName, plantDate, nextWatering, harvestDate, startingStage, ecosystem) {
+      const plantIcon = getPlantIcon(plantName);
+      const plantClass = getPlantClass(plantName);
+
+      savedPlants.unshift({
+        plant: plantName,
+        icon: plantIcon,
+        cardClass: plantClass,
+        planted: formatDate(plantDate),
+        watering: formatDate(nextWatering),
+        harvest: formatDate(harvestDate),
+        stage: startingStage,
+        ecosystem: ecosystem
+      });
+
+      localStorage.setItem('savedPlants', JSON.stringify(savedPlants));
+      showWateringAlerts();
+      showSavedPlants();
+    }
+
+    function updateDashboardStats() {
+      const dashboard = document.getElementById('dashboardStats');
+
+      const totalPlants = savedPlants.length;
+      const ecosystemsCount = new Set(savedPlants.map(p => p.ecosystem)).size;
+
+      const wateringDue = savedPlants.filter(item => {
+        const today = new Date();
+        const wateringDate = new Date(item.watering);
+        const difference = Math.ceil((wateringDate - today) / (1000 * 60 * 60 * 24));
+        return difference <= 0;
+      }).length;
+
+      const harvestReady = savedPlants.filter(item => item.stage === '🍅 Harvest Ready').length;
+
+      dashboard.innerHTML = `
+        <strong>🌿 Greenhouse Dashboard</strong><br><br>
+        🌱 Total Plants: ${totalPlants}<br>
+        💧 Need Water Today: ${wateringDue}<br>
+        ✨ Ecosystems: ${ecosystemsCount}<br>
+        🍅 Harvest Ready: ${harvestReady}
+      `;
+    }
+
+    function showWateringAlerts() {
+      const wateringAlerts = document.getElementById('wateringAlerts');
+
+      if (savedPlants.length === 0) {
+        wateringAlerts.style.display = 'none';
+        return;
+      }
+
+      wateringAlerts.style.display = 'block';
+
+      let alertHTML = '<strong>💧 Watering Alerts</strong>';
+
+      savedPlants.forEach(item => {
+        const today = new Date();
+        const wateringDate = new Date(item.watering);
+        const difference = Math.ceil((wateringDate - today) / (1000 * 60 * 60 * 24));
+
+        let status = '';
+
+        if (difference <= 0) {
+          status = `⚠️ ${item.plant} needs watering today!`;
+        } else if (difference <= 2) {
+          status = `💧 ${item.plant} watering due soon.`;
+        } else {
+          status = `🌿 ${item.plant} is happy for now.`;
+        }
+
+        alertHTML += `
+          <div class="note-card ${item.cardClass}">
+            ${status}
+          </div>
+        `;
+      });
+
+      wateringAlerts.innerHTML = alertHTML;
+    }
+
+    function showSavedPlants() {
+      const searchValue = document.getElementById('plantSearch').value.toLowerCase();
+      const stageFilter = document.getElementById('stageFilter').value;
+      const ecosystemFilter = document.getElementById('ecosystemFilter').value;
+      const savedPlantsList = document.getElementById('savedPlantsList');
+
+      if (savedPlants.length === 0) {
+        savedPlantsList.style.display = 'none';
+        return;
+      }
+
+      savedPlantsList.style.display = 'block';
+
+      let visiblePlantCount = 0;
+
+      let plantsHTML = '<strong>🌱 Saved Greenhouse Plants</strong><br><span style="font-size:14px; opacity:0.75;">Manage your tiny ecosystems</span><br><br>';
+
+      savedPlants.forEach((item, index) => {
+        const matchesSearch = item.plant.toLowerCase().includes(searchValue)
+          || item.ecosystem.toLowerCase().includes(searchValue);
+
+        const matchesStage = stageFilter === 'all' || item.stage === stageFilter;
+
+        const matchesEcosystem = ecosystemFilter === 'all' || item.ecosystem === ecosystemFilter;
+
+        if (!matchesSearch || !matchesStage || !matchesEcosystem) return;
+
+        visiblePlantCount++;
+        plantsHTML += `
+          <div class="note-card">
+            <strong style="font-size: 22px;">${item.icon} ${item.plant}</strong><br>
+            🌱 Planted: ${item.planted}<br>
+            🌍 Ecosystem: ${item.ecosystem}<br>
+            ✨ Stage: ${item.stage}<br>
+            💧 Next watering: ${item.watering}<br>
+            🧺 Harvest: ${item.harvest}<br><br>
+            <button onclick="cycleStage(${index})" style="background:#6c8c52; margin-top:10px;">🌿 Next Stage</button>
+            <button onclick="editPlant(${index})" style="background:#5b7aa3; margin-top:10px;">✏️ Edit Plant</button>
+            <button onclick="deletePlant(${index})" style="background:#a14f4f; margin-top:10px;">❌ Remove Plant</button>
+          </div>
+        `;
+      });
+
+      if (visiblePlantCount === 0) {
+        plantsHTML += `
+          <div class="note-card plant-custom">
+            🌿 No plants found for this search/filter combo.
+          </div>
+        `;
+      } else {
+        plantsHTML = plantsHTML.replace(
+          '</span><br><br>',
+          `</span><br><span style="font-size:13px; opacity:0.7;">Showing ${visiblePlantCount} plant(s)</span><br><br>`
+        );
+      }
+
+      savedPlantsList.innerHTML = plantsHTML;
+    }
+
+    function makePlan() {
+      const selectedPlant = document.getElementById('plantPreset').value;
+      const plantName = document.getElementById('plantName').value.trim();
+      const plantDateValue = document.getElementById('plantDate').value;
+      const waterDays = document.getElementById('waterDays').value;
+      const harvestDays = document.getElementById('harvestDays').value;
+      const greenhouseNote = document.getElementById('greenhouseNote').value.trim();
+      const resultBox = document.getElementById('result');
+
+      if (!plantName || !plantDateValue || !waterDays || !harvestDays) {
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = 'Please fill in the plant, date, watering, and harvest fields first 🌱';
+        return;
+      }
+
+      const plantDate = new Date(plantDateValue);
+      const nextWatering = addDays(new Date(), waterDays);
+      const harvestDate = addDays(plantDate, harvestDays);
+      const presetNote = presets[selectedPlant]?.note || 'Observe your plant regularly and adjust care based on the weather.';
+
+      const startingStage = document.getElementById('startingStage').value;
+      const ecosystem = document.getElementById('ecosystem').value;
+
+      savePlantPlan(plantName, plantDate, nextWatering, harvestDate, startingStage, ecosystem);
+      const noteText = greenhouseNote ? `<br><br><strong>Your note:</strong><br>${greenhouseNote}` : '';
+      const taskList = makeTaskList(selectedPlant);
+
+      resultBox.style.display = 'block';
+      resultBox.innerHTML = `
+        <strong>${plantName}</strong><br><br>
+        🌱 Planted: ${formatDate(plantDate)}<br>
+        💧 Next watering: ${formatDate(nextWatering)}<br>
+        🧺 Estimated harvest: ${formatDate(harvestDate)}<br><br>
+        <strong>Care note:</strong><br>
+        ${presetNote}${noteText}<br><br>
+        <strong>Today’s Greenhouse Tasks:</strong><br>
+        ${taskList}
+      `;
+    }
+
+    function saveNote() {
+      const plantName = document.getElementById('plantName').value.trim() || 'General greenhouse note';
+      const greenhouseNote = document.getElementById('greenhouseNote').value.trim();
+      const notesList = document.getElementById('notesList');
+
+      if (!greenhouseNote) {
+        notesList.style.display = 'block';
+        notesList.innerHTML = 'Write a greenhouse note first 🌿';
+        return;
+      }
+
+      greenhouseNotes.unshift({
+        plant: plantName,
+        note: greenhouseNote,
+        date: formatDate(new Date())
+      });
+
+      localStorage.setItem('greenhouseNotes', JSON.stringify(greenhouseNotes));
+      document.getElementById('greenhouseNote').value = '';
+      showNotes();
+    }
+
+    function showNotes() {
+      const notesList = document.getElementById('notesList');
+
+      if (greenhouseNotes.length === 0) {
+        notesList.style.display = 'none';
+        return;
+      }
+
+      notesList.style.display = 'block';
+      let notesHTML = '<strong>Greenhouse Notes</strong>';
+
+      greenhouseNotes.forEach(item => {
+        notesHTML += `
+          <div class="note-card">
+            <strong>${item.plant}</strong><br>
+            ${item.date}<br>
+            ${item.note}
+          </div>
+        `;
+      });
+
+      notesList.innerHTML = notesHTML;
+    }
+
+    function toggleCozyMode() {
+      document.body.classList.toggle('cozy-dark');
+
+      if (document.body.classList.contains('cozy-dark')) {
+        localStorage.setItem('cozyMode', 'on');
+      } else {
+        localStorage.setItem('cozyMode', 'off');
+      }
+    }
+  </script>
+</body>
+</html>
